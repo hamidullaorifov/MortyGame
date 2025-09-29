@@ -4,32 +4,37 @@ namespace MortyGame.Security;
 
 public class FairRandomGenerator
 {
-    private readonly int _range;
+    public int Range { get; set; }
+    public int MortyValue { get; set; }
+    public int RickValue { get; set; }
+    public int FinalValue { get; set; }
+
     private readonly byte[] _secretKey;
-    private readonly int _mortyValue;
+    
 
     public FairRandomGenerator(int range)
     {
-        _range = range;
+        Range = range;
         _secretKey = RandomNumberGenerator.GetBytes(32);
-        _mortyValue = RandomNumberGenerator.GetInt32(_range);
+        MortyValue = RandomNumberGenerator.GetInt32(range);
     }
 
     public string GetHmac()
     {
         using var hmac = new HMACSHA256(_secretKey);
-        byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(_mortyValue.ToString()));
+        byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(MortyValue.ToString()));
         return Convert.ToHexString(hash);
     }
 
     public int Finalize(int rickValue)
     {
-        return (_mortyValue + rickValue) % _range;
+        FinalValue = (MortyValue + rickValue) % Range;
+        return FinalValue;
     }
     public void Reveal()
     {
-        Console.WriteLine($"Morty: My secret value was {_mortyValue}");
+        Console.WriteLine($"Morty: My secret value was {MortyValue}");
         Console.WriteLine($"Morty: Key = {Convert.ToHexString(_secretKey)}");
-        Console.WriteLine($"Morty: Fair result = (m + r) % {_range} = {_mortyValue}");
+        Console.WriteLine($"Morty: Fair result = ({MortyValue} + {RickValue}) % {Range} = {FinalValue}");
     }
 }
